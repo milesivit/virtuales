@@ -196,3 +196,4 @@ def test_update_delete_user(api_client):
     assert response.json()['detail'] == f"User {user.username} deactivated"
 
     url = reverse("users-detail", args=[user.pk])
+
