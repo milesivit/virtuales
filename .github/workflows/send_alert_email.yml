@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.EMAIL_HOST_USER }}
           password: ${{ secrets.EMAIL_HOST_PASSWORD }}
           subject: "PR LISTO PARA MERGE"
-          to: 'm.sivit@itecriocuarto.org.ar'
+          to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.EMAIL_FROM }}
           secure: STARTTLS
           body: |
