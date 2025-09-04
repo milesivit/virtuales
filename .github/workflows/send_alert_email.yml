@@ -48,7 +48,7 @@ notify: # job num 2
         username: ${{ secrets.EMAIL_HOST_USER }}
         password: ${{ secrets.EMAIL_HOST_PASSWORD }}
         subjets: "PR LISTO PARA MERGE"
-        to: ${{ secrets.EMAIL_TO }}
+        to: 'm.sivit@itecriocuarto.org.ar'
         from: ${{ secrets.EMAIL_FROM }}
         secure: STARTTLS
         body: |
