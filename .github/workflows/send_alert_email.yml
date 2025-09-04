@@ -7,22 +7,22 @@ on: # disparador
 
 jobs:
   test: # Job principal
-    name: Django pytest # nombre del job
-    runs-on: ubuntu-latest # runner github
-    timeout-minutes: 3 
+    name: Django pytest
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
     env:
       PYTHONPATH: ${{ github.workspace }}/itec2025
       PYTHONDONTWRITEBYTECODE: 1
       PYTHONUNBUFFERED: 1
 
-    steps: # ✅ aquí los steps van indentados dentro del job
-      - name: Checkout # clona el repositorio al runner
+    steps:
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'  
+          python-version: '3.12'
           cache: 'pip'
       
       - name: Install Dependencies
@@ -31,26 +31,26 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests (Pytest)
-        run: python-m pytest -q # corre test en modo quiet
+        run: python -m pytest -q
 
-notify: # job num 2
-  name: Send email on success
-  needs: test # solo se ejecuta si test terminó
-  if: success()
-  runs-on: ubuntu-latest #runner github
+  notify: # Job 2, ahora dentro de jobs
+    name: Send email on success
+    needs: test # solo se ejecuta si test terminó
+    if: success()
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Send email
-      uses: dawidd6/action-send-mail@v3
-      with: 
-        server_address: ${{ secrets.EMAIL_HOST }}
-        server_port: ${{ secrets.EMAIL_PORT }}
-        username: ${{ secrets.EMAIL_HOST_USER }}
-        password: ${{ secrets.EMAIL_HOST_PASSWORD }}
-        subjets: "PR LISTO PARA MERGE"
-        to: 'm.sivit@itecriocuarto.org.ar'
-        from: ${{ secrets.EMAIL_FROM }}
-        secure: STARTTLS
-        body: |
+    steps:
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3
+        with: 
+          server_address: ${{ secrets.EMAIL_HOST }}
+          server_port: ${{ secrets.EMAIL_PORT }}
+          username: ${{ secrets.EMAIL_HOST_USER }}
+          password: ${{ secrets.EMAIL_HOST_PASSWORD }}
+          subject: "PR LISTO PARA MERGE"
+          to: 'm.sivit@itecriocuarto.org.ar'
+          from: ${{ secrets.EMAIL_FROM }}
+          secure: STARTTLS
+          body: |
             El pull request paso sin problema
-            Autor del PR ${{ github.event.pull_request.user.login }}
+            Autor del PR: ${{ github.event.pull_request.user.login }}
