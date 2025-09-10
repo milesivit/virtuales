@@ -50,7 +50,7 @@ jobs:
           password: ${{ secrets.EMAIL_HOST_PASSWORD }}
           subject: "PR Listo para ser mergeado"
           to: 'm.sivit@itecriocuarto.org.ar'
-          from: ${{ secrets.EMAIL_HOST }}
+          from: ${{ secrets.EMAIL_HOST_USER }}
           secure: STARTTLS
           body: | 
               El pull request paso sin problema
