@@ -1,39 +1,39 @@
-name: Run Test # nombre del action
+name: Run Tests # Nombre del Action
 
-on: # disparador
-  pull_request: # Cuando se abre/actualiza un Pull Request(PR)
-    branches: [ main ] # solo cuando el pr apunte a main
-  push: # cuando se hace un push directo a main
+on: #Disparador
+  pull_request: #Cuando se abre/actualiza un Pull Request(PR)
+    branches: [ main ] #Solo cuando el PR apunte a main
+  push: #Cuando se hace un push directo a main
     branches: [ main ]
 
-concurrency: # esto evita ejecuciones solapadas
+concurrency: #Esto evita ejecuciones solapadas
   group: ${{ github.workflow }}-${{ github.ref }} # RunTest/main
-  cancel-in-progress: true # cancela la que llego primero, le da prioridad
+  cancel-in-progress: true #Cancela la que llego primero, le da prioridad a la entrante
 
 jobs:
-  test: # Job principal
-    name: Django pytest # nombre del job
-    runs-on: ubuntu-latest # runner github
-    timeout-minutes: 3 
+  tests: #Job Principal
+    name: Django pytest #Nombre del job
+    runs-on: ubuntu-latest # Runner github
+    timeout-minutes: 3 #
     env:
-      PYTHONPATH: ${{ github.workspace }}/itec2025
+      PYTHONPATH: ${{ github.workspace }}/itec2025 
       PYTHONDONTWRITEBYTECODE: 1
       PYTHONUNBUFFERED: 1
 
-    steps: # ✅ aquí los steps van indentados dentro del job
-      - name: Checkout # clona el repositorio al runner
+    steps:
+      - name: Checkout # Clona el repo al runner
         uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'  
+          python-version: '3.12'
           cache: 'pip'
-      
-      - name: Install Dependencies
+
+      - name: Installed Dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
 
       - name: Run tests (Pytest)
-        run: pytest -q # corre test en modo quiet
+        run: pytest -q # Corre tests en modo quiet falle el job
