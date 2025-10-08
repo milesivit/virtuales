@@ -29,7 +29,8 @@ urlpatterns = [
     path('', include('home.urls')),
     path('set_language', set_language, name="set_language"),
     path('api-auth/', include('rest_framework.urls')),
-    path('api/', include('api.urls'))
+    path('api/', include('api.urls')),
+    path('analytics/', include('analytics.urls'))
 ]
 
 if settings.DEBUG == True:
