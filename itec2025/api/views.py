@@ -1,14 +1,23 @@
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
+from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView
 )
+
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiResponse
+from drf_spectacular.types import OpenApiTypes
+
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 
+from api.mixins import AuthAdminView, AuthView
+from api.permissions import TokenPermission
 from api.serializers import (
     CategorySerializer,
     CustomerSerializer,
@@ -17,6 +26,40 @@ from api.serializers import (
 )
 from products.models import Category, Customer, Product
 
+@extend_schema_view(
+    get=extend_schema(
+        summary='listar usuarios',
+        description='devuelve la lisat de usuarios',
+        tags= ['usuarios'],
+        responses={
+            200: OpenApiResponse(
+            response=UserSerializer(many=True)
+        )}
+    ),
+    post=extend_schema(
+        summary='crea usuarios',
+        description='crea un usuario',
+        tags= ['usuarios'],
+        request= UserSerializer,
+        responses={
+            201: OpenApiResponse(
+            response=UserSerializer
+        )}
+    )
+)
+
+@extend_schema_view(
+    delete=extend_schema(
+        summary='elimina usuarios',
+        description='elimina un usuario',
+        tags= ['usuarios'],
+        responses={
+            200:OpenApiResponse(response=OpenApiTypes.OBJECT)
+        }
+    )
+)
+
+
 
 class UserListCreateView(ListCreateAPIView):
     """
@@ -24,6 +67,7 @@ class UserListCreateView(ListCreateAPIView):
         return -> [UserSerializer]
     POST /api/users/ -> Crea usuario
     """
+    permission_classes = [IsAuthenticated] #TODOS LOS USUARIOS AUTENTICADOS PUEDEN VERLO
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -35,6 +79,7 @@ class UserRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     PATCH /api/users/<pk> -> Actualizacion Parcial
     DETELE /api/users/<pk> -> Elimina
     """
+    permission_classes = [IsAdminUser] #SOLO USUSARIOS ADMIN PUEDEN ACCEDER (BASIC AUTH)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -54,7 +99,7 @@ class UserRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         )   
     
 
-class CustomerListCreateView(ListCreateAPIView):
+class CustomerListCreateView(ListCreateAPIView, AuthView):
     """
     GET /api/customer
         return -> [CustomerSerializer]
@@ -64,11 +109,13 @@ class CustomerListCreateView(ListCreateAPIView):
     serializer_class = CustomerSerializer
 
 
-class CategoryListCreateAPIView(APIView):
+class CategoryListCreateAPIView(APIView, AuthView):
     def get(self, request):
         qs = Category.objects.all().order_by('id')
-        serializer = CategorySerializer(qs, many=True)
-        return Response(serializer.data)
+        paginator = LimitOffsetPagination()
+        page = paginator.paginate_queryset(qs, request, view=self)
+        serializer = CategorySerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
     def post(self, request):
         serializer = CategorySerializer(data=request.data)
@@ -80,7 +127,7 @@ class CategoryListCreateAPIView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class CategoryDetailAPIView(APIView):
+class CategoryDetailAPIView(APIView, AuthAdminView):
     def get_object(self, pk):
         return get_object_or_404(Category, pk=pk)
     
@@ -117,7 +164,34 @@ class CategoryDetailAPIView(APIView):
     
 
 class ProductListCreateApiView(APIView):
+    permission_classes = [TokenPermission]
     def get(self, request):
         qs = Product.objects.all()
+        print(qs)
         serializer = ProductSerializer(qs, many=True)
         return Response(serializer.data)
+    
+
+class CustomerViewSet(viewsets.ModelViewSet, AuthView):
+    """
+    GENERA COMPLETAMENTE EL CRUD 
+    Y GENERA LAS RUTAS
+        - GET /api/customers-vs/
+        - POST /api/customers-vs/
+        - GET /api/customers-vs/{pk}
+        - PUT /api/customers-vs/{pk}
+        - PATCH /api/customers-vs/{pk}
+        - DELETE /api/customers-vs/{pk}
+    """
+
+    queryset = Customer.objects.all().order_by('id')
+    serializer_class = CustomerSerializer
+
+
+class CategoryViewSet(viewsets.ReadOnlyModelViewSet, AuthView):
+    """
+    GENERA COMPLETAMENTE EL CRUD 
+    Y GENERA LAS RUTAS
+    """
+    queryset = Category.objects.all().order_by('id')
+    serializer_class = CategorySerializer
